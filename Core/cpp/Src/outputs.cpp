@@ -24,7 +24,7 @@ void SetOutputs()
 {
 	//HAL_IWDG_Refresh(&hiwdg);
 	Y00_ON;
-	HAL_Delay(100);
+	osDelay(100);
 	Y00_OFF;
-	HAL_Delay(100);
+	osDelay(100);
 }

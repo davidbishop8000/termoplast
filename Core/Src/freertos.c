@@ -28,6 +28,7 @@
 
 #include "outputs.h"
 #include "inputs.h"
+#include "stepper_control.h"
 
 /* USER CODE END Includes */
 
@@ -87,6 +88,18 @@ const osThreadAttr_t InputsTask_attributes = {
   .stack_size = sizeof(InputsTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for SteppersTast */
+osThreadId_t SteppersTastHandle;
+uint32_t SteppersTastBuffer[ 128 ];
+osStaticThreadDef_t SteppersTastControlBlock;
+const osThreadAttr_t SteppersTast_attributes = {
+  .name = "SteppersTast",
+  .cb_mem = &SteppersTastControlBlock,
+  .cb_size = sizeof(SteppersTastControlBlock),
+  .stack_mem = &SteppersTastBuffer[0],
+  .stack_size = sizeof(SteppersTastBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -96,6 +109,7 @@ const osThreadAttr_t InputsTask_attributes = {
 void StartDefaultTask(void *argument);
 extern void StartOutputsTask(void *argument);
 extern void StartInputsTask(void *argument);
+extern void StartSteppersTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -134,6 +148,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of InputsTask */
   InputsTaskHandle = osThreadNew(StartInputsTask, NULL, &InputsTask_attributes);
+
+  /* creation of SteppersTast */
+  SteppersTastHandle = osThreadNew(StartSteppersTask, NULL, &SteppersTast_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
