@@ -27,7 +27,7 @@ uint8_t AccelStepper::runSpeed()
     unsigned long time = (unsigned long)micros();
     unsigned long nextStepTime = _lastStepTime + _stepInterval;
     // Gymnastics to detect wrapping of either the nextStepTime and/or the current time
-    if (   ((nextStepTime >= _lastStepTime) && ((time >= nextStepTime) || (time < _lastStepTime)))
+    if (((nextStepTime >= _lastStepTime) && ((time >= nextStepTime) || (time < _lastStepTime)))
 	|| ((nextStepTime < _lastStepTime) && ((time >= nextStepTime) && (time < _lastStepTime))))
     {
 		if (_direction == DIRECTION_CW)
@@ -79,69 +79,77 @@ void AccelStepper::computeNewSpeed()
     long distanceTo = distanceToGo(); // +ve is clockwise from curent location
 
     long stepsToStop = (long)((_speed * _speed) / (2.0f * _acceleration)); // Equation 16
+    HAL_GPIO_WritePin(_enPort, _enPin, GPIO_PIN_RESET);
 
     if (distanceTo == 0 && stepsToStop <= 1)
     {
-	// We are at the target and its time to stop
-	_stepInterval = 0;
-	_speed = 0.0;
-	_n = 0;
-	return;
+		// We are at the target and its time to stop
+		_stepInterval = 0;
+		_speed = 0.0;
+		_n = 0;
+		HAL_GPIO_WritePin(_enPort, _enPin, GPIO_PIN_SET);
+		return;
     }
 
     if (distanceTo > 0)
     {
-	// We are anticlockwise from the target
-	// Need to go clockwise from here, maybe decelerate now
-	if (_n > 0)
-	{
-	    // Currently accelerating, need to decel now? Or maybe going the wrong way?
-	    if ((stepsToStop >= distanceTo) || _direction == DIRECTION_CCW)
-		_n = -stepsToStop; // Start deceleration
-	}
-	else if (_n < 0)
-	{
-	    // Currently decelerating, need to accel again?
-	    if ((stepsToStop < distanceTo) && _direction == DIRECTION_CW)
-		_n = -_n; // Start accceleration
-	}
+		// We are anticlockwise from the target
+		// Need to go clockwise from here, maybe decelerate now
+		if (_n > 0)
+		{
+			// Currently accelerating, need to decel now? Or maybe going the wrong way?
+			if ((stepsToStop >= distanceTo) || _direction == DIRECTION_CCW)
+			_n = -stepsToStop; // Start deceleration
+		}
+		else if (_n < 0)
+		{
+			// Currently decelerating, need to accel again?
+			if ((stepsToStop < distanceTo) && _direction == DIRECTION_CW)
+			_n = -_n; // Start accceleration
+		}
+		//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);
+		//HAL_GPIO_WritePin(_dirPort, _dirPin, GPIO_PIN_SET);
     }
     else if (distanceTo < 0)
     {
-	// We are clockwise from the target
-	// Need to go anticlockwise from here, maybe decelerate
-	if (_n > 0)
-	{
-	    // Currently accelerating, need to decel now? Or maybe going the wrong way?
-	    if ((stepsToStop >= -distanceTo) || _direction == DIRECTION_CW)
-		_n = -stepsToStop; // Start deceleration
-	}
-	else if (_n < 0)
-	{
-	    // Currently decelerating, need to accel again?
-	    if ((stepsToStop < -distanceTo) && _direction == DIRECTION_CCW)
-		_n = -_n; // Start accceleration
-	}
+		// We are clockwise from the target
+		// Need to go anticlockwise from here, maybe decelerate
+		if (_n > 0)
+		{
+			// Currently accelerating, need to decel now? Or maybe going the wrong way?
+			if ((stepsToStop >= -distanceTo) || _direction == DIRECTION_CW)
+			_n = -stepsToStop; // Start deceleration
+		}
+		else if (_n < 0)
+		{
+			// Currently decelerating, need to accel again?
+			if ((stepsToStop < -distanceTo) && _direction == DIRECTION_CCW)
+			_n = -_n; // Start accceleration
+		}
+		//HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);
+		//HAL_GPIO_WritePin(_dirPort, _dirPin, GPIO_PIN_RESET);
     }
 
     // Need to accelerate or decelerate
     if (_n == 0)
     {
-	// First step from stopped
-	_cn = _c0;
-	_direction = (distanceTo > 0) ? DIRECTION_CW : DIRECTION_CCW;
+		// First step from stopped
+		_cn = _c0;
+		_direction = (distanceTo > 0) ? DIRECTION_CW : DIRECTION_CCW;
     }
     else
     {
-	// Subsequent step. Works for accel (n is +_ve) and decel (n is -ve).
-	_cn = _cn - ((2.0f * _cn) / ((4.0f * _n) + 1)); // Equation 13
-	_cn = fmax(_cn, _cmin);
+		// Subsequent step. Works for accel (n is +_ve) and decel (n is -ve).
+		_cn = _cn - ((2.0f * _cn) / ((4.0f * _n) + 1)); // Equation 13
+		_cn = fmax(_cn, _cmin);
     }
     _n++;
     _stepInterval = _cn;
     _speed = 1000000.0f / _cn;
     if (_direction == DIRECTION_CCW)
-	_speed = -_speed;
+    {
+    	_speed = -_speed;
+    }
 }
 
 // Run the motor to implement speed and acceleration in order to proceed to the target position
@@ -159,8 +167,8 @@ AccelStepper::AccelStepper(GPIO_TypeDef* pulse_port, uint16_t pulse_pin, GPIO_Ty
 {
 	_pulsePort = pulse_port;
 	_pulsePin = pulse_pin;
-	_dirPort = en_port;
-	_dirPin = en_pin;
+	_dirPort = dir_port;
+	_dirPin = dir_pin;
 	_enPort = en_port;
 	_enPin = en_pin;
     _currentPos = 0;
@@ -245,8 +253,9 @@ float AccelStepper::speed()
 // Subclasses can override
 void AccelStepper::step(long step)
 {   
-    // _pin[0] is step, _pin[1] is direction
-	//HAL_GPIO_WritePin(_enPort, _enPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(_dirPort, _dirPin, (GPIO_PinState)_direction);
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, (GPIO_PinState)_direction);
+	//delay_us(_minPulseWidth);
 	HAL_GPIO_WritePin(_pulsePort, _pulsePin, GPIO_PIN_SET);
 
     delay_us(_minPulseWidth);
