@@ -26,9 +26,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "termoplast_config.h"
 #include "outputs.h"
 #include "inputs.h"
 #include "stepper_control.h"
+#include "uart_wifi.h"
+#include "temp_sensor.h"
 
 /* USER CODE END Includes */
 
@@ -50,6 +53,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
+GlobDataTypeDef globData;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -88,16 +93,40 @@ const osThreadAttr_t InputsTask_attributes = {
   .stack_size = sizeof(InputsTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for SteppersTast */
-osThreadId_t SteppersTastHandle;
+/* Definitions for SteppersTask */
+osThreadId_t SteppersTaskHandle;
 uint32_t SteppersTastBuffer[ 128 ];
 osStaticThreadDef_t SteppersTastControlBlock;
-const osThreadAttr_t SteppersTast_attributes = {
-  .name = "SteppersTast",
+const osThreadAttr_t SteppersTask_attributes = {
+  .name = "SteppersTask",
   .cb_mem = &SteppersTastControlBlock,
   .cb_size = sizeof(SteppersTastControlBlock),
   .stack_mem = &SteppersTastBuffer[0],
   .stack_size = sizeof(SteppersTastBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for UartWiFiTask */
+osThreadId_t UartWiFiTaskHandle;
+uint32_t UartWiFiTaskBuffer[ 256 ];
+osStaticThreadDef_t UartWiFiTaskControlBlock;
+const osThreadAttr_t UartWiFiTask_attributes = {
+  .name = "UartWiFiTask",
+  .cb_mem = &UartWiFiTaskControlBlock,
+  .cb_size = sizeof(UartWiFiTaskControlBlock),
+  .stack_mem = &UartWiFiTaskBuffer[0],
+  .stack_size = sizeof(UartWiFiTaskBuffer),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for TempSensorTask */
+osThreadId_t TempSensorTaskHandle;
+uint32_t TempSensorTaskBuffer[ 128 ];
+osStaticThreadDef_t TempSensorTaskControlBlock;
+const osThreadAttr_t TempSensorTask_attributes = {
+  .name = "TempSensorTask",
+  .cb_mem = &TempSensorTaskControlBlock,
+  .cb_size = sizeof(TempSensorTaskControlBlock),
+  .stack_mem = &TempSensorTaskBuffer[0],
+  .stack_size = sizeof(TempSensorTaskBuffer),
   .priority = (osPriority_t) osPriorityNormal,
 };
 
@@ -110,6 +139,8 @@ void StartDefaultTask(void *argument);
 extern void StartOutputsTask(void *argument);
 extern void StartInputsTask(void *argument);
 extern void StartSteppersTask(void *argument);
+extern void StartUartWiFiTask(void *argument);
+extern void StartTempSensorTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -149,8 +180,14 @@ void MX_FREERTOS_Init(void) {
   /* creation of InputsTask */
   InputsTaskHandle = osThreadNew(StartInputsTask, NULL, &InputsTask_attributes);
 
-  /* creation of SteppersTast */
-  SteppersTastHandle = osThreadNew(StartSteppersTask, NULL, &SteppersTast_attributes);
+  /* creation of SteppersTask */
+  SteppersTaskHandle = osThreadNew(StartSteppersTask, NULL, &SteppersTask_attributes);
+
+  /* creation of UartWiFiTask */
+  UartWiFiTaskHandle = osThreadNew(StartUartWiFiTask, NULL, &UartWiFiTask_attributes);
+
+  /* creation of TempSensorTask */
+  TempSensorTaskHandle = osThreadNew(StartTempSensorTask, NULL, &TempSensorTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -175,6 +212,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_11);
     osDelay(1000);
   }
   /* USER CODE END StartDefaultTask */

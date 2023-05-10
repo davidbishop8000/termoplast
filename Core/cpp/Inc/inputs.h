@@ -8,6 +8,12 @@
 #ifndef CPP_INC_INPUTS_H_
 #define CPP_INC_INPUTS_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#include "main.h"
 #include "cmsis_os2.h"
 
 /*
@@ -37,8 +43,6 @@ PC11    X21 //rx
 PC10    X22 //tx
 PA15    X23
  */
-
-#include "main.h"
 
 #define ANTI_BOUNCE_TIME_SEARCH_MS 30
 #define ANTI_BOUNCE_TIME_QUANT_MS 2
@@ -77,16 +81,12 @@ PA15    X23
 #define IN_X22 GPIOC->IDR & (1 << 10)
 #define IN_X23 GPIOA->IDR & (1 << 15)
 
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 void StartInputsTask(void *argument);
+
+void InputsRead();
+
 #ifdef __cplusplus
 }
 #endif
-
-void InputsRead();
 
 #endif /* CPP_INC_INPUTS_H_ */

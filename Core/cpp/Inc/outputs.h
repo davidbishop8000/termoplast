@@ -8,6 +8,11 @@
 #ifndef CPP_INC_OUTPUTS_H_
 #define CPP_INC_OUTPUTS_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "main.h"
 #include "cmsis_os2.h"
 
@@ -112,15 +117,12 @@
 #define Y22_ON (GPIOD->BSRR = GPIO_BSRR_BR10)
 #define Y23_ON (GPIOD->BSRR = GPIO_BSRR_BR11)
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 void StartOutputsTask(void *argument);
+
+void SetOutputs();
+
 #ifdef __cplusplus
 }
 #endif
-
-void SetOutputs();
 
 #endif /* CPP_INC_OUTPUTS_H_ */
