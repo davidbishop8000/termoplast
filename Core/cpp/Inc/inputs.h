@@ -33,7 +33,7 @@ PB3     X11
 PD7     X12
 PD6     X13
 PD5     X14
-PD4     X15 //bumpers
+PD4     X15
 PD3     X16
 PD2     X17
 PD1     X18

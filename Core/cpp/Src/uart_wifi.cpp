@@ -73,8 +73,9 @@ void SendStatus()
 	statusMsg.msg_id = WIFI_GET_STATUS;
 	statusMsg.cs_errors = globData.cs_err;
 	statusMsg.temp1 = globData.temp1;
-	statusMsg.temp1 = globData.temp2;
-	statusMsg.temp1 = globData.temp3;
+	statusMsg.temp2 = globData.temp2;
+	statusMsg.temp3 = globData.temp3;
+	statusMsg.sens = globData.sens;
 	statusMsg.CS = calculateCS((uint8_t *)&statusMsg, sizeof(statusMsg)-1);
 
 	//for test//////

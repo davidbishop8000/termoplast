@@ -7,6 +7,9 @@
 
 
 #include <outputs.h>
+#include "termoplast_config.h"
+
+extern GlobDataTypeDef globData;
 
 //extern IWDG_HandleTypeDef hiwdg;
 
@@ -23,8 +26,7 @@ void StartOutputsTask(void *argument)
 void SetOutputs()
 {
 	//HAL_IWDG_Refresh(&hiwdg);
-	Y00_ON;
-	osDelay(100);
-	Y00_OFF;
-	osDelay(100);
+	(globData.temp1 > 30.0) ? Y00_OFF : Y00_ON;
+	(globData.temp2 > 30.0) ? Y01_OFF : Y01_ON;
+	(globData.temp3 > 30.0) ? Y02_OFF : Y02_ON;
 }
