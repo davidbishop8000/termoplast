@@ -8,31 +8,35 @@
 #include <uart_wifi.h>
 #include <string.h>
 #include "termoplast_config.h"
+#include "flash_data.h"
 
-#include <stdio.h> //for test
+//#include <stdio.h> //for test
 
 extern UART_HandleTypeDef WIFI_UART;
 extern DMA_HandleTypeDef WIFI_UART_DMA;
 
 extern GlobDataTypeDef globData;
+extern TermoplastConfigTypeDef termoplastConfig;
 uint8_t new_wifi_data = 0;
 uint8_t wifi_uart_buff[100];
 StatusMsgTypeDef statusMsg;
+TermoplastConfigTypeDef recevedTermoplastConfig;
+stmConfigTypeDef stmConf;
 
 void StartUartWiFiTask(void *argument)
 {
+	HAL_UARTEx_ReceiveToIdle_DMA(&WIFI_UART, wifi_uart_buff, sizeof(wifi_uart_buff));
+	__HAL_DMA_DISABLE_IT(&WIFI_UART_DMA, DMA_IT_HT);
+	ConfigInit();
 	for(;;)
 	{
-		static uint32_t release_button_tick = 0;
-		static uint32_t cs_err = 0;
-
 		if ((new_wifi_data && wifi_uart_buff[2] == WIFI_CONTROL_ID)
 				&& wifi_uart_buff[0] == START_MSG0 && wifi_uart_buff[1] == START_MSG1) {
 			enum WIFI_MSG_ID MSG_ID = (WIFI_MSG_ID)wifi_uart_buff[3];
 			if (MSG_ID == WIFI_GET_STATUS) {
 				if (wifi_uart_buff[RECEV_MSG_CS_BYTE_NUM]
 						!= calculateCS(wifi_uart_buff, RECEV_MSG_CS_BYTE_NUM)) {
-					cs_err++;
+					globData.cs_err++;
 				}
 				else {
 					SendStatus();
@@ -41,11 +45,28 @@ void StartUartWiFiTask(void *argument)
 			else if (MSG_ID == WIFI_SET_MANUAL_COM) {
 				if (wifi_uart_buff[RECEV_MSG_CS_BYTE_NUM]
 						!= calculateCS(wifi_uart_buff, RECEV_MSG_CS_BYTE_NUM)) {
-					cs_err++;
+					globData.cs_err++;
 				}
 				else {
-					release_button_tick = HAL_GetTick();
 					SetManual();
+				}
+			}
+			else if (MSG_ID == WIFI_GET_STM_CONFIG) {
+				if (wifi_uart_buff[RECEV_MSG_CS_BYTE_NUM]
+						!= calculateCS(wifi_uart_buff, RECEV_MSG_CS_BYTE_NUM)) {
+					globData.cs_err++;
+				}
+				else {
+					stmConf = *(stmConfigTypeDef*)wifi_uart_buff;
+					GetSTMConfig();
+				}
+			}
+			else if (MSG_ID == WIFI_SET_STM_CONFIG) {
+				if (wifi_uart_buff[RECEV_MSG_CS_BYTE_NUM]
+						!= calculateCS(wifi_uart_buff, sizeof(stmConfigTypeDef)-1)) {
+					globData.cs_err++;
+				} else {
+					ConfigUpdate();
 				}
 			}
 			new_wifi_data = 0;
@@ -60,8 +81,8 @@ void StartUartWiFiTask(void *argument)
 			}
 		}*/
 
-		osDelay(1000);
-		SendStatus(); //for test
+		//osDelay(1000);
+		//SendStatus(); //for test
 	}
 }
 
@@ -76,6 +97,8 @@ void SendStatus()
 	statusMsg.temp2 = globData.temp2;
 	statusMsg.temp3 = globData.temp3;
 	statusMsg.sens = globData.sens;
+	statusMsg.cycles_count = globData.cycles_count;
+	statusMsg.cycles_set = globData.cycles_set;
 	statusMsg.CS = calculateCS((uint8_t *)&statusMsg, sizeof(statusMsg)-1);
 
 	//for test//////
@@ -101,6 +124,17 @@ void SetManual()
 
 }
 
+void GetSTMConfig()
+{
+	stmConf.start_msg0 = START_MSG0;
+	stmConf.start_msg1 = START_MSG1;
+	stmConf.control_id = WIFI_CONTROL_ID;
+	stmConf.msg_id = WIFI_GET_STATUS;
+	stmConf.termConfig = termoplastConfig;
+	stmConf.CS = calculateCS((uint8_t *)&stmConf, sizeof(stmConf)-1);
+	HAL_UART_Transmit(&WIFI_UART, (uint8_t*)&stmConf, sizeof(stmConf), 100);
+}
+
 uint8_t calculateCS(uint8_t *msg, int msg_size) {
   uint8_t cs = 0;
   for (int i=0; i<msg_size; i++)
@@ -108,6 +142,88 @@ uint8_t calculateCS(uint8_t *msg, int msg_size) {
     cs+=msg[i];
   }
   return cs;
+}
+
+void ConfigInit()
+{
+	flashReadData(&termoplastConfig);
+	if (termoplastConfig.flash_init != FLASH_INIT)
+	{
+		termoplastConfig.volume_per_rev = 100.0;
+		termoplastConfig.motor1_speed = 1000;
+		termoplastConfig.motor1_acc = 500;
+		termoplastConfig.motor2_speed = 1000;
+		termoplastConfig.motor2_acc = 500;
+		termoplastConfig.temp1 = 30.0;
+		termoplastConfig.temp2 = 30.0;
+		termoplastConfig.temp3 = 30.0;
+		termoplastConfig.Kp = 1.0;
+		termoplastConfig.Ki = 1.0;
+		termoplastConfig.Kd = 1.0;
+		termoplastConfig.bitParams.ind = 1;
+	}
+}
+
+void ConfigUpdate()
+{
+	int err = 0;
+	if (recevedTermoplastConfig.volume_per_rev > 0) {
+		termoplastConfig.volume_per_rev = recevedTermoplastConfig.volume_per_rev;
+	}
+	else err++;
+	if (recevedTermoplastConfig.motor1_speed > 0 && recevedTermoplastConfig.motor1_speed < 5000)
+	{
+		termoplastConfig.motor1_speed = recevedTermoplastConfig.motor1_speed;
+	}
+	else err++;
+	if (recevedTermoplastConfig.motor1_acc > 0 && recevedTermoplastConfig.motor1_acc < 5000)
+	{
+		termoplastConfig.motor1_acc= recevedTermoplastConfig.motor1_acc;
+	}
+	else err++;
+	if (recevedTermoplastConfig.motor2_speed > 0 && recevedTermoplastConfig.motor2_speed < 5000) {
+		termoplastConfig.motor2_speed = recevedTermoplastConfig.motor2_speed;
+	}
+	else err++;
+	if (recevedTermoplastConfig.motor2_acc > 0 && recevedTermoplastConfig.motor2_acc < 5000) {
+		termoplastConfig.motor2_acc = recevedTermoplastConfig.motor2_acc;
+	}
+	else err++;
+	if (recevedTermoplastConfig.motor2_acc > 0 && recevedTermoplastConfig.motor2_acc < 5000) {
+		termoplastConfig.motor2_acc = recevedTermoplastConfig.motor2_acc;
+	}
+	else err++;
+	if (recevedTermoplastConfig.temp1 > 0 && recevedTermoplastConfig.temp1 < 500) {
+		termoplastConfig.temp1 = recevedTermoplastConfig.temp1;
+	}
+	else err++;
+	if (recevedTermoplastConfig.temp2 > 0 && recevedTermoplastConfig.temp2 < 500) {
+		termoplastConfig.temp2 = recevedTermoplastConfig.temp2;
+	}
+	else err++;
+	if (recevedTermoplastConfig.temp3 > 0 && recevedTermoplastConfig.temp3 < 500) {
+		termoplastConfig.temp3 = recevedTermoplastConfig.temp3;
+	}
+	else err++;
+	if (recevedTermoplastConfig.Kp > 0) {
+		termoplastConfig.Kp = recevedTermoplastConfig.Kp;
+	}
+	else err++;
+	if (recevedTermoplastConfig.Ki > 0) {
+		termoplastConfig.Ki = recevedTermoplastConfig.Ki;
+	}
+	else err++;
+	if (recevedTermoplastConfig.Kd > 0) {
+		termoplastConfig.Kd = recevedTermoplastConfig.Kd;
+	}
+	else err++;
+	if (err)
+	{
+		globData.LEDB = LEDB_ERROR;
+		return;
+	}
+	flashWriteData(&termoplastConfig);
+	globData.LEDB = LEDB_FLASH_OK;
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)

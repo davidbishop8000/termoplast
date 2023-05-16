@@ -19,6 +19,8 @@ public:
 
     uint8_t runSpeed();
 
+    void rotate();
+
     void setMaxSpeed(float speed);
 
     float maxSpeed();

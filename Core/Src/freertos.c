@@ -55,6 +55,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* USER CODE BEGIN Variables */
 
 GlobDataTypeDef globData;
+TermoplastConfigTypeDef termoplastConfig;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */

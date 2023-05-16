@@ -120,6 +120,7 @@ extern "C"
 void StartOutputsTask(void *argument);
 
 void SetOutputs();
+void LedBlink();
 
 #ifdef __cplusplus
 }

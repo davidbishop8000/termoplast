@@ -50,6 +50,11 @@ uint8_t AccelStepper::runSpeed()
     }
 }
 
+void AccelStepper::rotate()
+{
+	step(1);
+}
+
 long AccelStepper::distanceToGo()
 {
     return _targetPos - _currentPos;

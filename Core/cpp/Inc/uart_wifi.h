@@ -25,6 +25,9 @@ void StartUartWiFiTask(void *argument);
 
 void SendStatus();
 void SetManual();
+void ConfigInit();
+void ConfigUpdate();
+void GetSTMConfig();
 uint8_t calculateCS(uint8_t *msg, int msg_size);
 
 #ifdef __cplusplus
