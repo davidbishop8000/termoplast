@@ -20,8 +20,7 @@ extern TermoplastConfigTypeDef termoplastConfig;
 uint8_t new_wifi_data = 0;
 uint8_t wifi_uart_buff[100];
 StatusMsgTypeDef statusMsg;
-TermoplastConfigTypeDef recevedTermoplastConfig;
-stmConfigTypeDef stmConf;
+StmConfigTypeDef stmConf;
 
 void StartUartWiFiTask(void *argument)
 {
@@ -57,15 +56,14 @@ void StartUartWiFiTask(void *argument)
 					globData.cs_err++;
 				}
 				else {
-					stmConf = *(stmConfigTypeDef*)wifi_uart_buff;
 					GetSTMConfig();
 				}
 			}
 			else if (MSG_ID == WIFI_SET_STM_CONFIG) {
-				if (wifi_uart_buff[RECEV_MSG_CS_BYTE_NUM]
-						!= calculateCS(wifi_uart_buff, sizeof(stmConfigTypeDef)-1)) {
+				if (wifi_uart_buff[sizeof(StmConfigTypeDef)-1] != calculateCS(wifi_uart_buff, sizeof(StmConfigTypeDef)-1)) {
 					globData.cs_err++;
 				} else {
+					stmConf = *(StmConfigTypeDef*)wifi_uart_buff;
 					ConfigUpdate();
 				}
 			}
@@ -129,10 +127,10 @@ void GetSTMConfig()
 	stmConf.start_msg0 = START_MSG0;
 	stmConf.start_msg1 = START_MSG1;
 	stmConf.control_id = WIFI_CONTROL_ID;
-	stmConf.msg_id = WIFI_GET_STATUS;
+	stmConf.msg_id = WIFI_GET_STM_CONFIG;
 	stmConf.termConfig = termoplastConfig;
-	stmConf.CS = calculateCS((uint8_t *)&stmConf, sizeof(stmConf)-1);
-	HAL_UART_Transmit(&WIFI_UART, (uint8_t*)&stmConf, sizeof(stmConf), 100);
+	stmConf.CS = calculateCS((uint8_t *)&stmConf, sizeof(StmConfigTypeDef)-1);
+	HAL_UART_Transmit(&WIFI_UART, (uint8_t*)&stmConf, sizeof(StmConfigTypeDef), 100);
 }
 
 uint8_t calculateCS(uint8_t *msg, int msg_size) {
@@ -167,54 +165,54 @@ void ConfigInit()
 void ConfigUpdate()
 {
 	int err = 0;
-	if (recevedTermoplastConfig.volume_per_rev > 0) {
-		termoplastConfig.volume_per_rev = recevedTermoplastConfig.volume_per_rev;
+	if (stmConf.termConfig.volume_per_rev > 0) {
+		termoplastConfig.volume_per_rev = stmConf.termConfig.volume_per_rev;
 	}
 	else err++;
-	if (recevedTermoplastConfig.motor1_speed > 0 && recevedTermoplastConfig.motor1_speed < 5000)
+	if (stmConf.termConfig.motor1_speed > 0 && stmConf.termConfig.motor1_speed < 5000)
 	{
-		termoplastConfig.motor1_speed = recevedTermoplastConfig.motor1_speed;
+		termoplastConfig.motor1_speed = stmConf.termConfig.motor1_speed;
 	}
 	else err++;
-	if (recevedTermoplastConfig.motor1_acc > 0 && recevedTermoplastConfig.motor1_acc < 5000)
+	if (stmConf.termConfig.motor1_acc > 0 && stmConf.termConfig.motor1_acc < 5000)
 	{
-		termoplastConfig.motor1_acc= recevedTermoplastConfig.motor1_acc;
+		termoplastConfig.motor1_acc= stmConf.termConfig.motor1_acc;
 	}
 	else err++;
-	if (recevedTermoplastConfig.motor2_speed > 0 && recevedTermoplastConfig.motor2_speed < 5000) {
-		termoplastConfig.motor2_speed = recevedTermoplastConfig.motor2_speed;
+	if (stmConf.termConfig.motor2_speed > 0 && stmConf.termConfig.motor2_speed < 5000) {
+		termoplastConfig.motor2_speed = stmConf.termConfig.motor2_speed;
 	}
 	else err++;
-	if (recevedTermoplastConfig.motor2_acc > 0 && recevedTermoplastConfig.motor2_acc < 5000) {
-		termoplastConfig.motor2_acc = recevedTermoplastConfig.motor2_acc;
+	if (stmConf.termConfig.motor2_acc > 0 && stmConf.termConfig.motor2_acc < 5000) {
+		termoplastConfig.motor2_acc = stmConf.termConfig.motor2_acc;
 	}
 	else err++;
-	if (recevedTermoplastConfig.motor2_acc > 0 && recevedTermoplastConfig.motor2_acc < 5000) {
-		termoplastConfig.motor2_acc = recevedTermoplastConfig.motor2_acc;
+	if (stmConf.termConfig.motor2_acc > 0 && stmConf.termConfig.motor2_acc < 5000) {
+		termoplastConfig.motor2_acc = stmConf.termConfig.motor2_acc;
 	}
 	else err++;
-	if (recevedTermoplastConfig.temp1 > 0 && recevedTermoplastConfig.temp1 < 500) {
-		termoplastConfig.temp1 = recevedTermoplastConfig.temp1;
+	if (stmConf.termConfig.temp1 > 0 && stmConf.termConfig.temp1 < 500) {
+		termoplastConfig.temp1 = stmConf.termConfig.temp1;
 	}
 	else err++;
-	if (recevedTermoplastConfig.temp2 > 0 && recevedTermoplastConfig.temp2 < 500) {
-		termoplastConfig.temp2 = recevedTermoplastConfig.temp2;
+	if (stmConf.termConfig.temp2 > 0 && stmConf.termConfig.temp2 < 500) {
+		termoplastConfig.temp2 = stmConf.termConfig.temp2;
 	}
 	else err++;
-	if (recevedTermoplastConfig.temp3 > 0 && recevedTermoplastConfig.temp3 < 500) {
-		termoplastConfig.temp3 = recevedTermoplastConfig.temp3;
+	if (stmConf.termConfig.temp3 > 0 && stmConf.termConfig.temp3 < 500) {
+		termoplastConfig.temp3 = stmConf.termConfig.temp3;
 	}
 	else err++;
-	if (recevedTermoplastConfig.Kp > 0) {
-		termoplastConfig.Kp = recevedTermoplastConfig.Kp;
+	if (stmConf.termConfig.Kp > 0) {
+		termoplastConfig.Kp = stmConf.termConfig.Kp;
 	}
 	else err++;
-	if (recevedTermoplastConfig.Ki > 0) {
-		termoplastConfig.Ki = recevedTermoplastConfig.Ki;
+	if (stmConf.termConfig.Ki > 0) {
+		termoplastConfig.Ki = stmConf.termConfig.Ki;
 	}
 	else err++;
-	if (recevedTermoplastConfig.Kd > 0) {
-		termoplastConfig.Kd = recevedTermoplastConfig.Kd;
+	if (stmConf.termConfig.Kd > 0) {
+		termoplastConfig.Kd = stmConf.termConfig.Kd;
 	}
 	else err++;
 	if (err)
@@ -222,6 +220,7 @@ void ConfigUpdate()
 		globData.LEDB = LEDB_ERROR;
 		return;
 	}
+	termoplastConfig.flash_init = FLASH_INIT;
 	flashWriteData(&termoplastConfig);
 	globData.LEDB = LEDB_FLASH_OK;
 }
