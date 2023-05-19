@@ -20,6 +20,7 @@ extern TermoplastConfigTypeDef termoplastConfig;
 uint8_t new_wifi_data = 0;
 uint8_t wifi_uart_buff[100];
 StatusMsgTypeDef statusMsg;
+JobMsgTypeDef jobMsg;
 StmConfigTypeDef stmConf;
 
 void StartUartWiFiTask(void *argument)
@@ -48,6 +49,16 @@ void StartUartWiFiTask(void *argument)
 				}
 				else {
 					SetManual();
+				}
+			}
+			else if (MSG_ID == WIFI_SET_JOB) {
+				if (wifi_uart_buff[sizeof(JobMsgTypeDef) - 1]
+						!= calculateCS(wifi_uart_buff, sizeof(JobMsgTypeDef) - 1)) {
+					globData.cs_err++;
+				}
+				else {
+					jobMsg = *(JobMsgTypeDef*) wifi_uart_buff;
+					SetJob();
 				}
 			}
 			else if (MSG_ID == WIFI_GET_STM_CONFIG) {
@@ -120,6 +131,22 @@ void SendStatus()
 void SetManual()
 {
 
+}
+
+void SetJob()
+{
+	if (jobMsg.comm == JOB_START)
+	{
+		globData.volume = jobMsg.volume;
+		globData.time_hold = jobMsg.time_hold;
+		globData.cycles_set = jobMsg.cycles;
+		globData.heat_on = 1;
+	}
+	else if (jobMsg.comm != JOB_PAUSE || jobMsg.comm != JOB_RESUME)
+	{
+		globData.heat_on = 0;
+	}
+	globData.current_status = jobMsg.comm;
 }
 
 void GetSTMConfig()

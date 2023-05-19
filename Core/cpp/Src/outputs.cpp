@@ -30,9 +30,18 @@ void StartOutputsTask(void *argument)
 
 void SetOutputs()
 {
-	((globData.temp1 > MAX_TEMP) || (globData.temp1 > termoplastConfig.temp1)) ? Y00_OFF : Y00_ON;
-	((globData.temp2 > MAX_TEMP) || (globData.temp2 > termoplastConfig.temp2)) ? Y01_OFF : Y01_ON;
-	((globData.temp3 > MAX_TEMP) || (globData.temp3 > termoplastConfig.temp3)) ? Y02_OFF : Y02_ON;
+	if (globData.heat_on)
+	{
+		((globData.temp1 > MAX_TEMP) || (globData.temp1 > termoplastConfig.temp1)) ? Y00_OFF : Y00_ON;
+		((globData.temp2 > MAX_TEMP) || (globData.temp2 > termoplastConfig.temp2)) ? Y01_OFF : Y01_ON;
+		((globData.temp3 > MAX_TEMP) || (globData.temp3 > termoplastConfig.temp3)) ? Y02_OFF : Y02_ON;
+	}
+	else
+	{
+		Y01_OFF;
+		Y02_OFF;
+		Y03_OFF;
+	}
 }
 
 void LedBlink() {

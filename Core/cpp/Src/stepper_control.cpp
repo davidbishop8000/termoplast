@@ -8,6 +8,7 @@
 #include "stepper_control.h"
 #include "accelStepper.h"
 extern GlobDataTypeDef globData;
+extern TermoplastConfigTypeDef termoplastConfig;
 
 void StartSteppersTask(void *argument)
 {
@@ -28,11 +29,11 @@ void StartSteppersTask(void *argument)
 	globData.cycles_set = 5;
 	for(;;)
 	{
-		if (globData.temp1 > 30) globData.heating_ok = 1;
-		else globData.heating_ok = 0;
+		if (globData.temp1 > termoplastConfig.temp1) globData.heating_ok = 1;
+		else if (globData.temp1 < termoplastConfig.temp1 - 5) globData.heating_ok = 0;
 		if (state == 0)
 		{
-			if (globData.heating_ok)
+			if (globData.heating_ok && globData.current_status == JOB_START)
 			{
 				if (globData.cycles_count < globData.cycles_set)
 				{
@@ -68,6 +69,11 @@ void StartSteppersTask(void *argument)
 		else if (state == 6)
 		{
 			globData.cycles_count++;
+			if (globData.cycles_count >= globData.cycles_set)
+			{
+				globData.current_status = JOB_COMPLETED;
+				globData.heat_on = 0;
+			}
 			osDelay(1000);
 			state = 0;
 		}

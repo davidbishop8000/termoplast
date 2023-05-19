@@ -119,6 +119,7 @@ typedef struct {
 	float temp1;
 	float temp2;
 	float temp3;
+	uint32_t heat_on;
 	uint32_t heating_ok;
 	SensorsTypeDef sens;
 	ErrorMsgTypeDef error;
@@ -151,6 +152,10 @@ typedef struct {
 	uint8_t start_msg1;
 	uint8_t control_id;
 	uint8_t msg_id;
+	uint8_t comm;
+	uint8_t c1;
+	uint8_t c2;
+	uint8_t c3;
 	float volume;
 	uint32_t time_hold;
 	uint32_t cycles;
@@ -166,6 +171,8 @@ enum WIFI_MSG_ID {
 	WIFI_SET_MANUAL_COM,
 	WIFI_GET_STM_CONFIG,
 	WIFI_SET_STM_CONFIG,
+	WIFI_SET_JOB,
+	WIFI_SET_HEATING,
 	WIFI_RESERV1,
 	WIFI_RESERV2,
 	WIFI_RESERV3,
@@ -180,6 +187,17 @@ enum LED_BLINK {
 	LEDB_FLASH_OK,
 	LEDB_ERROR,
 	LEDB_MAX,
+};
+
+enum JOB_STATUS {
+	JOB_WAITING = 0,
+	JOB_START,
+	JOB_PAUSE,
+	JOB_RESUME,
+	JOB_COMPLETED,
+	JOB_STOP,
+	JOB_ERROR,
+	JOB_MAX,
 };
 
 #ifdef __cplusplus

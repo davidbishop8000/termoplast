@@ -25,6 +25,7 @@ void StartUartWiFiTask(void *argument);
 
 void SendStatus();
 void SetManual();
+void SetJob();
 void ConfigInit();
 void ConfigUpdate();
 void GetSTMConfig();
