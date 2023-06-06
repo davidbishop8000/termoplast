@@ -189,7 +189,7 @@ void ConfigInit()
 	}
 }
 
-void ConfigUpdate()
+int ConfigUpdate()
 {
 	int err = 0;
 	if (stmConf.termConfig.volume_per_rev > 0) {
@@ -245,11 +245,12 @@ void ConfigUpdate()
 	if (err)
 	{
 		globData.LEDB = LEDB_ERROR;
-		return;
+		return err;
 	}
 	termoplastConfig.flash_init = FLASH_INIT;
 	flashWriteData(&termoplastConfig);
 	globData.LEDB = LEDB_FLASH_OK;
+	return 0;
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)

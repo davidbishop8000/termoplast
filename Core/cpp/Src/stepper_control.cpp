@@ -30,7 +30,7 @@ void StartSteppersTask(void *argument)
 	for(;;)
 	{
 		if (globData.temp1 > termoplastConfig.temp1) globData.heating_ok = 1;
-		else if (globData.temp1 < termoplastConfig.temp1 - 5) globData.heating_ok = 0;
+		else if ((globData.temp1 < termoplastConfig.temp1 - 5) || globData.temp1 > 500 ) globData.heating_ok = 0;
 		if (state == 0)
 		{
 			if (globData.heating_ok && globData.current_status == JOB_START)

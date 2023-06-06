@@ -27,7 +27,7 @@ void SendStatus();
 void SetManual();
 void SetJob();
 void ConfigInit();
-void ConfigUpdate();
+int ConfigUpdate();
 void GetSTMConfig();
 uint8_t calculateCS(uint8_t *msg, int msg_size);
 
