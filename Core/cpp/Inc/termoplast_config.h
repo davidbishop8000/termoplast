@@ -73,22 +73,22 @@ typedef struct {
 } StmConfigTypeDef;
 
 typedef struct {
-	unsigned char limit_sw1		:1;
-	unsigned char limit_sw2		:1;
-	unsigned char button1		:1;
-	unsigned char button2		:1;
-	unsigned char button3		:1;
-	unsigned char button4		:1;
-	unsigned char button5		:1;
-	unsigned char button6		:1;
-	unsigned char r0		:1;
-	unsigned char r1		:1;
-	unsigned char r2		:1;
-	unsigned char r3		:1;
-	unsigned char r4		:1;
-	unsigned char r5		:1;
-	unsigned char r6		:1;
-	unsigned char r7		:1;
+	unsigned char limit_sw1				:1;
+	unsigned char limit_sw2				:1;
+	unsigned char button_manual_mode	:1;
+	unsigned char button_motor1_forw	:1;
+	unsigned char button_motor1_back	:1;
+	unsigned char button_motor2_forw	:1;
+	unsigned char button_motor2_back	:1;
+	unsigned char button_start			:1;
+	unsigned char button_pause			:1;
+	unsigned char button_stop			:1;
+	unsigned char button8				:1;
+	unsigned char r0					:1;
+	unsigned char r1					:1;
+	unsigned char r2					:1;
+	unsigned char r3					:1;
+	unsigned char r4					:1;
 } SensorsTypeDef;
 
 typedef struct {
@@ -198,6 +198,16 @@ enum JOB_STATUS {
 	JOB_STOP,
 	JOB_ERROR,
 	JOB_MAX,
+};
+
+enum MOVE_COME {
+	MOVE_STOP = 0,
+	MOVE_MOTOR1_FORW,
+	MOVE_MOTOR1_BACK,
+	MOVE_MOTOR2_FORW,
+	MOVE_MOTOR2_BACK,
+	MOVE_ERROR,
+	MOVE_MAX,
 };
 
 #ifdef __cplusplus

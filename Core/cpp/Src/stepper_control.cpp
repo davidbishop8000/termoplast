@@ -83,6 +83,33 @@ void StartSteppersTask(void *argument)
 		//motor2.runSpeed();
 		//
 		//motor_press_dis();
+		if (globData.sens.button_manual_mode) {
+			if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
+				motor1_en();
+				motor1.setSpeed(1000.0);
+				motor1.runSpeed();
+			}
+			else if (globData.current_move_comm == MOVE_MOTOR1_BACK) {
+				motor1_en();
+				motor1.setSpeed(-1000.0);
+				motor1.runSpeed();
+			}
+			else if (globData.current_move_comm == MOVE_MOTOR2_FORW) {
+				motor_press_en();
+				motor2.setSpeed(1000.0);
+				motor2.runSpeed();
+			}
+			else if (globData.current_move_comm == MOVE_MOTOR2_BACK) {
+				motor_press_en();
+				motor2.setSpeed(-1000.0);
+				motor2.runSpeed();
+			}
+			else {
+				motor1_dis();
+				motor_press_dis();
+			}
+			osDelay(1);
+		}
 	}
 }
 

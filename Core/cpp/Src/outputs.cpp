@@ -42,6 +42,26 @@ void SetOutputs()
 		Y02_OFF;
 		Y03_OFF;
 	}
+	if (globData.sens.button_manual_mode) {
+		Y06_ON;
+		if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
+			Y07_ON;
+		} else if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
+			Y08_ON;
+		} else if (globData.current_move_comm == MOVE_MOTOR2_FORW) {
+			Y09_ON;
+		} else if (globData.current_move_comm == MOVE_MOTOR2_BACK) {
+			Y10_ON;
+		} else {
+			Y07_OFF;
+			Y08_OFF;
+			Y09_OFF;
+			Y10_OFF;
+		}
+	}
+	else {
+		Y06_OFF;
+	}
 }
 
 void LedBlink() {
