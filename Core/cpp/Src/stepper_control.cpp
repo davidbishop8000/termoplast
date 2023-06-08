@@ -20,7 +20,7 @@ void StartSteppersTask(void *argument)
 	//motor1.setSpeed(1000.0);
 
 	motor2.setMinPulseWidth(6);
-	//motor2.setMaxSpeed(1000.0);
+	motor2.setMaxSpeed(1000.0);
 	motor2.setAcceleration(500);
 	motor2.setSpeed(1000.0);
 	DWT_Init();

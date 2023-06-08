@@ -23,11 +23,13 @@ void StartTempSensorTask(void *argument)
 	{
 		ReadThermoCouple(&sensor_th1);
 		globData.temp1 = sensor_th1.Thx_celcius;
-		osDelay(500);
-		//ReadThermoCouple(&sensor_th2);
-		//osDelay(50);
-		//ReadThermoCouple(&sensor_th3);
-		//osDelay(50);
+		osDelay(150);
+		ReadThermoCouple(&sensor_th2);
+		globData.temp2 = sensor_th2.Thx_celcius;
+		osDelay(150);
+		ReadThermoCouple(&sensor_th3);
+		globData.temp3 = sensor_th3.Thx_celcius;
+		osDelay(150);
 	}
 }
 
