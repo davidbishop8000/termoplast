@@ -30,6 +30,7 @@ void StartOutputsTask(void *argument)
 
 void SetOutputs()
 {
+	static int manual_mode_trig = 0;
 	if (globData.heat_on)
 	{
 		((globData.temp1 > MAX_TEMP) || (globData.temp1 > termoplastConfig.temp1)) ? Y00_OFF : Y00_ON;
@@ -43,24 +44,34 @@ void SetOutputs()
 		Y03_OFF;
 	}
 	if (globData.sens.button_manual_mode) {
+		manual_mode_trig = 1;
 		Y06_ON;
 		if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
 			Y07_ON;
-		} else if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
+		}
+		else if (globData.current_move_comm == MOVE_MOTOR1_BACK) {
 			Y08_ON;
-		} else if (globData.current_move_comm == MOVE_MOTOR2_FORW) {
+		}
+		else if (globData.current_move_comm == MOVE_MOTOR2_FORW) {
 			Y09_ON;
-		} else if (globData.current_move_comm == MOVE_MOTOR2_BACK) {
+		}
+		else if (globData.current_move_comm == MOVE_MOTOR2_BACK) {
 			Y10_ON;
-		} else {
+		}
+		else {
 			Y07_OFF;
 			Y08_OFF;
 			Y09_OFF;
 			Y10_OFF;
 		}
 	}
-	else {
+	else if (manual_mode_trig) {
+		manual_mode_trig = 0;
 		Y06_OFF;
+		Y07_OFF;
+		Y08_OFF;
+		Y09_OFF;
+		Y10_OFF;
 	}
 }
 

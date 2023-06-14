@@ -259,7 +259,6 @@ float AccelStepper::speed()
 void AccelStepper::step(long step)
 {   
 	HAL_GPIO_WritePin(_dirPort, _dirPin, (GPIO_PinState)_direction);
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, (GPIO_PinState)_direction);
 	//delay_us(_minPulseWidth);
 	HAL_GPIO_WritePin(_pulsePort, _pulsePin, GPIO_PIN_SET);
 

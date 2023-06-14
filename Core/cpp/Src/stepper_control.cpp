@@ -27,6 +27,9 @@ void StartSteppersTask(void *argument)
 	long pos = 1000; //globData.volume
 	int state = 0;
 	globData.cycles_set = 5;
+	int manual_mode_trig = 0;
+	motor1_dis();
+	motor_press_dis();
 	for(;;)
 	{
 		if (globData.temp1 > termoplastConfig.temp1) globData.heating_ok = 1;
@@ -84,6 +87,7 @@ void StartSteppersTask(void *argument)
 		//
 		//motor_press_dis();
 		if (globData.sens.button_manual_mode) {
+			manual_mode_trig = 1;
 			if (globData.current_move_comm == MOVE_MOTOR1_FORW) {
 				motor1_en();
 				motor1.setSpeed(1000.0);
@@ -109,6 +113,11 @@ void StartSteppersTask(void *argument)
 				motor_press_dis();
 			}
 			osDelay(1);
+		}
+		else if (manual_mode_trig) {
+			manual_mode_trig = 0;
+			motor1_dis();
+			motor_press_dis();
 		}
 	}
 }

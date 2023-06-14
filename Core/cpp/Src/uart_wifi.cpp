@@ -175,10 +175,12 @@ void ConfigInit()
 	if (termoplastConfig.flash_init != FLASH_INIT)
 	{
 		termoplastConfig.volume_per_rev = 100.0;
+		termoplastConfig.volume = 10.0;
 		termoplastConfig.motor1_speed = 1000;
 		termoplastConfig.motor1_acc = 500;
 		termoplastConfig.motor2_speed = 1000;
 		termoplastConfig.motor2_acc = 500;
+		termoplastConfig.time_hold = 10;
 		termoplastConfig.temp1 = 30.0;
 		termoplastConfig.temp2 = 30.0;
 		termoplastConfig.temp3 = 30.0;
@@ -194,6 +196,10 @@ int ConfigUpdate()
 	int err = 0;
 	if (stmConf.termConfig.volume_per_rev > 0) {
 		termoplastConfig.volume_per_rev = stmConf.termConfig.volume_per_rev;
+	}
+	else err++;
+	if (stmConf.termConfig.volume > 0) {
+		termoplastConfig.volume = stmConf.termConfig.volume;
 	}
 	else err++;
 	if (stmConf.termConfig.motor1_speed > 0 && stmConf.termConfig.motor1_speed < 5000)
@@ -216,6 +222,10 @@ int ConfigUpdate()
 	else err++;
 	if (stmConf.termConfig.motor2_acc > 0 && stmConf.termConfig.motor2_acc < 5000) {
 		termoplastConfig.motor2_acc = stmConf.termConfig.motor2_acc;
+	}
+	else err++;
+	if (stmConf.termConfig.time_hold > 0) {
+		termoplastConfig.time_hold = stmConf.termConfig.time_hold;
 	}
 	else err++;
 	if (stmConf.termConfig.temp1 > 0 && stmConf.termConfig.temp1 < 500) {
